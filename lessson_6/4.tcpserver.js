@@ -7,8 +7,16 @@ var fs = require("fs");
 var ws = fs.createWriteStream("../read.txt");
 
 var server = net.createServer({allowHalfOpen: false}, function (socket) {
+    socket.setTimeout(10*1000);
     //socket.setEncoding("utf8");
-    socket.pipe(ws,{end:false});
+    socket.on("timeout",function(){
+        socket.setEncoding("utf8");
+        socket.resume();
+        socket.pipe(ws,{end:false});
+        ws.write(socket.remoteAddress+"======>");
+        console.log("timeout");
+       // socket.unpipe(ws);
+    })
 });
 
 
