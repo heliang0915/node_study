@@ -24,12 +24,18 @@
             <tr>
                 <td>文件名</td>
                 <td>文件大小</td>
-                <td>文件内容</td>
+                <td>文件类型</td>
+                <td>当前速度</td>
+                <td>剩余时间</td>
+                <td>百分比</td>
             </tr>
             <tr>
                 <td id="fileName"></td>
                 <td id="fileSize"></td>
                 <td id="fileType"></td>
+                <td id="speed"></td>
+                <td id="time"></td>
+                <td id="percent">0%</td>
             </tr>
         </table>
     </div>
@@ -48,24 +54,40 @@
     function fileSelected() {
         var file = document.querySelector("#fileUpload").files[0];
         if (file) {
-            var fileSize = 0;
+            var fileSize = convert(file.size);
             document.querySelector("#fileName").innerHTML = file.name;
-            document.querySelector("#fileSize").innerHTML = file.size;
+            document.querySelector("#fileSize").innerHTML = fileSize;
             document.querySelector("#fileType").innerHTML = file.type;
         }
     }
     function uploadFile() {
-        var fd = new FormData();
-        var file = document.querySelector("#fileUpload").files[0];
-        fd.append("fileUpload", file);
-        var xhr = new XMLHttpRequest();
-        xhr.upload.addEventListener("progress", progress, false); //上传进度
-        xhr.addEventListener("load", success, false); //上传成功
-        xhr.addEventListener("err", error, false);//上传出错
-        xhr.addEventListener("abort", abort, false);//上传退出
 
-        xhr.open("POST", "/post");
-        xhr.send(fd);
+        var file = document.querySelector("#fileUpload").files[0];
+
+        var shareSize = 2 * 1024 * 1024;
+        var shareCount = Math.ceil(file.size / shareSize);
+        for (var i = 0; i < shareCount; i++) {
+            var fd = new FormData();
+            var start=shareSize*i;
+            var end=Math.min(file.size,start+shareSize);
+            console.log(start)
+            console.log(end)
+            fd.append("data", file.slice(start,end));
+            fd.append("name", "fileUpload");
+            fd.append("index", i+1);
+            fd.append("size", shareSize);
+            fd.append("total",shareCount);
+            var xhr = new XMLHttpRequest();
+//            xhr.upload.addEventListener("progress", progress, false); //上传进度
+//            xhr.addEventListener("load", success, false); //上传成功
+//            xhr.addEventListener("err", error, false);//上传出错
+//            xhr.addEventListener("abort", abort, false);//上传退出
+            xhr.open("POST", "/post");
+            xhr.send(fd);
+
+        }
+
+
     }
 
     function success() {
@@ -79,10 +101,43 @@
     function abort() {
 
     }
+
+    var last = 0;
+    var t;
     function progress(event) {
-        var percent = Math.round(event.loaded * 100 / event.total); //上传进度
+        var loaded = event.loaded;
+        var total = event.total;
+        var surplus = total - loaded;
+        var diff = loaded - last;
+        //计算剩余时间
+        var times = surplus / diff;
+
+        last = loaded;
+        var percent = Math.round(loaded * 100 / total); //上传进度
         var progressBar = document.querySelector(".progress-bar");
-        progressBar.style.width = percent+"%";
+        var percentDom = document.querySelector("#percent");
+        var speed = document.querySelector("#speed");
+        var time = document.querySelector("#time");
+        progressBar.style.width = percent + "%";
         progressBar.style["aria-valuenow"] = percent;
+        percentDom.innerHTML = percent + "%";
+        speed.innerHTML = convert(diff) + "/s";
+        time.innerHTML = times.toFixed(2) + "s";
     }
+
+    //单位换算
+    function convert(val) {
+        if (val > 1024 * 1024 * 1024) {
+            val = (val / 1024 / 1024 / 1024).toFixed(2) + "GB";
+        } else if (val > 1024 * 1024) {
+            val = (val / 1024 / 1024).toFixed(2) + "MB";
+        } else if (val > 1024) {
+            val = (val / 1024).toFixed(2) + "KB";
+        } else {
+            val = val + "B";
+        }
+        return val;
+    }
+
+
 </script>
