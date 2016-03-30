@@ -1,9 +1,10 @@
 var http=require("http");
+var querystring=require("querystring")
 var options={
     hostname:"localhost",
     port:8080,
     headers:{
-        'Content-Type':"application/json"
+        'Content-Type':"application/x-www-form-urlencoded"
     },
     path:'/',
     method:'post'
@@ -19,5 +20,5 @@ var request=http.request(options,function(req,res){
     })
 });
 
-request.write(JSON.stringify({name:'珠峰培训'}));
+request.write(querystring.stringify({name:'珠峰培训Form'}));
 request.end();

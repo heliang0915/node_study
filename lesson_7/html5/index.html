@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>上传文件</title>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <form>
+        <div class="form-group">
+            <label for="fileUpload">
+                请选择上传文件
+            </label>
+            <input type="file" class="form-control" name="fileUpload" id="fileUpload" onchange="fileSelected()">
+        </div>
+        <div class="form-group">
+            <input type="button" onclick="uploadFile()" class="btn btn-default" value="上传">
+        </div>
+    </form>
+    <div>
+        <table class="table table-striped">
+            <tr>
+                <td>文件名</td>
+                <td>文件大小</td>
+                <td>文件内容</td>
+            </tr>
+            <tr>
+                <td id="fileName"></td>
+                <td id="fileSize"></td>
+                <td id="fileType"></td>
+            </tr>
+        </table>
+    </div>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+             style="width:0%;">
+            <span class="sr-only">0% Complete</span>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
+<script>
+    function fileSelected() {
+        var file = document.querySelector("#fileUpload").files[0];
+        if (file) {
+            var fileSize = 0;
+            document.querySelector("#fileName").innerHTML = file.name;
+            document.querySelector("#fileSize").innerHTML = file.size;
+            document.querySelector("#fileType").innerHTML = file.type;
+        }
+    }
+    function uploadFile() {
+        var fd = new FormData();
+        var file = document.querySelector("#fileUpload").files[0];
+        fd.append("fileUpload", file);
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", progress, false); //上传进度
+        xhr.addEventListener("load", success, false); //上传成功
+        xhr.addEventListener("err", error, false);//上传出错
+        xhr.addEventListener("abort", abort, false);//上传退出
+
+        xhr.open("POST", "/post");
+        xhr.send(fd);
+    }
+
+    function success() {
+        alert("上传成功！");
+    }
+
+    function error() {
+
+    }
+
+    function abort() {
+
+    }
+    function progress(event) {
+        var percent = Math.round(event.loaded * 100 / event.total); //上传进度
+        var progressBar = document.querySelector(".progress-bar");
+        progressBar.style.width = percent+"%";
+        progressBar.style["aria-valuenow"] = percent;
+    }
+</script>
