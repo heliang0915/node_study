@@ -61,22 +61,30 @@
         }
     }
     function uploadFile() {
-
         var file = document.querySelector("#fileUpload").files[0];
-
-        var shareSize = 2 * 1024 * 1024;
+        var fileName=file.name;
+        var shareSize = 2*1024*1024;
         var shareCount = Math.ceil(file.size / shareSize);
+
+
+
+//        xhr.upload.addEventListener("progress", progress, false); //上传进度
+//        xhr.addEventListener("load", success, false); //上传成功
+//        xhr.addEventListener("err", error, false);//上传出错
+//        xhr.addEventListener("abort", abort, false);//上传退出
+
         for (var i = 0; i < shareCount; i++) {
             var fd = new FormData();
             var start=shareSize*i;
             var end=Math.min(file.size,start+shareSize);
-            console.log(start)
-            console.log(end)
             fd.append("data", file.slice(start,end));
-            fd.append("name", "fileUpload");
-            fd.append("index", i+1);
+            fd.append("name", fileName);
+            fd.append("index", parseInt(i+1));
             fd.append("size", shareSize);
             fd.append("total",shareCount);
+
+            grss(i,shareCount);
+
             var xhr = new XMLHttpRequest();
 //            xhr.upload.addEventListener("progress", progress, false); //上传进度
 //            xhr.addEventListener("load", success, false); //上传成功
@@ -86,9 +94,18 @@
             xhr.send(fd);
 
         }
-
-
     }
+
+    function grss(current,total){
+        var progressBar = document.querySelector(".progress-bar");
+        var percentDom = document.querySelector("#percent");
+        var percent=(((current+1) / total)*100).toFixed(0);
+        console.log(percent);
+        progressBar.style.width = percent + "%";
+        progressBar.style["aria-valuenow"] = percent;
+        percentDom.innerHTML = percent + "%";
+    }
+
 
     function success() {
         alert("上传成功！");
