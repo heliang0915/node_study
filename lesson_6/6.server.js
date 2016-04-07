@@ -7,6 +7,7 @@ var util = require("util");
 var server = net.createServer({allowHalfOpen: false}, function (socket) {
     socket.setEncoding("utf8");
     socket.on('data', function (data) {
+       console.log(socket._handle);
         console.log("客户端对服务器端的数据"+data);
         socket.write("服务器收到："+data);
     })
