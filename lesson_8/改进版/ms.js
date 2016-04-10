@@ -1,6 +1,7 @@
 var fork = require('child_process').fork;
 var cpuLen = require('os').cpus().length;
 var server = require('net').createServer();
+
 server.listen(8000);
 
 console.log("主进程pid " + process.pid);
